@@ -19,7 +19,10 @@
   "scripts": {
     "build": "tsc",
     "example": "tsx examples/usage.ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "validation",
@@ -37,7 +40,9 @@
   },
   "homepage": "https://github.com/felipeboff/vale#readme",
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
+    "tsx": "^4.19.2",
     "typescript": "^5.9.3",
-    "tsx": "^4.19.2"
+    "vitest": "^4.0.18"
   }
 }
