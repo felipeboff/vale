@@ -1,0 +1,43 @@
+{
+  "name": "vale",
+  "version": "1.0.0",
+  "description": "TypeScript-first runtime validator with coercion, composable schemas, and path-based error reporting",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "example": "tsx examples/usage.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "validation",
+    "schema",
+    "parser",
+    "typescript",
+    "runtime",
+    "coercion"
+  ],
+  "author": "Felipe Boff (https://github.com/felipeboff)",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/felipeboff/vale.git"
+  },
+  "homepage": "https://github.com/felipeboff/vale#readme",
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "tsx": "^4.19.2"
+  }
+}
