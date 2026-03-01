@@ -6,4 +6,4 @@ export const valeUuidRegex =
 
 export const valeObjectIdRegex = /^[0-9a-fA-F]{24}$/;
 
-export const valeDateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+export const valeDateRegex = /^(\d{4,})-(\d{2})-(\d{2})$/;
