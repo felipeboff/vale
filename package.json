@@ -36,7 +36,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/felipeboff/vale.git"
+    "url": "git+https://github.com/felipeboff/vale.git"
   },
   "homepage": "https://github.com/felipeboff/vale#readme",
   "devDependencies": {
