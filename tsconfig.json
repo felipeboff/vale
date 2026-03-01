@@ -6,7 +6,8 @@
     "declarationMap": true,
     "strict": true,
     "lib": ["ES2016", "ES2017"],
-    "target": "ES2016"
+    "target": "ES2016",
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
