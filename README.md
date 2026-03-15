@@ -1,124 +1,184 @@
 # Vale
 
-**TypeScript-first runtime validator** with coercion, composable schemas, and path-based error reporting.
+TypeScript-first runtime validator with coercion, composable schemas, and path-based error reporting.
 
-Validate and parse unknown input (e.g. from APIs, forms, or config) into typed values. Vale returns a result object instead of throwing, so you can handle validation failures explicitly or use `valeValidate` to throw on error.
+Validate and parse unknown input (for example APIs, forms, or config) into typed values. Vale returns a result object instead of throwing so validation failures can be handled explicitly. When needed you can use `valeValidate` to throw on failure.
 
 ## Features
 
-- **Coercion** – Primitives like `number`, `integer`, `boolean`, and `date` accept string input and coerce when valid (e.g. `"42"` → `42`, `"true"` → `true`).
-- **Composable schemas** – Build `object`, `array`, nested structures, and combine with `.optional()`, `.nullable()`, `.default()`, `.into()`, and `.guard()`.
-- **Path-based errors** – Each issue includes a `path` (e.g. `["author", "age"]`) so you can show field-level errors in UIs or logs.
-- **Type inference** – Use `InferVale<typeof schema>` to get the TypeScript type from a schema.
-- **No dependencies** – Pure TypeScript/JavaScript, zero runtime deps.
+- Coercion  
+  Primitives like number, integer, boolean, and date accept string input and coerce when valid.  
+  `"42"` becomes `42`, `"true"` becomes `true`.
 
-## Installation
+- Composable schemas  
+  Build object, array, and nested structures. Combine with `.optional()`, `.nullable()`, `.default()`, `.into()`, and `.guard()`.
+
+- Path-based errors  
+  Each issue includes a path such as `["author", "age"]`. This makes it easy to show field errors in UI or logs.
+
+- Type inference  
+  Use `InferVale<typeof schema>` to derive the TypeScript type from a schema.
+
+- No dependencies  
+  Pure TypeScript / JavaScript with zero runtime dependencies.
+
+---
+
+# Installation
+
+npm
 
 ```bash
-npm install vale
+npm i @felipe.boff/vale
+```
+yarn
+```bash
+yarn add @felipe.boff/vale
+```
+pnpm
+```bash
+pnpm add @felipe.boff/vale
 ```
 
-## Quick start
+---
 
+Quick start
 ```ts
-import { vale, type InferVale } from "vale";
+import { vale, type InferVale } from "@felipe.boff/vale"
 
 const userSchema = vale.object({
   name: vale.string(),
   age: vale.integer(),
   email: vale.email(),
   active: vale.boolean().default(true),
-});
+})
 
-type User = InferVale<typeof userSchema>;
+type User = InferVale<typeof userSchema>
 
 const result = userSchema.parse({
   name: "Jane",
   age: 28,
   email: "jane@example.com",
-});
+})
 
 if (result.ok) {
-  console.log(result.value); // User
+  console.log(result.value)
 } else {
-  console.log(result.issues); // { path, code, message }[]
+  console.log(result.issues)
 }
 ```
 
-## Schema types
+---
 
-| Method               | Description                            |
-| -------------------- | -------------------------------------- |
-| `vale.string()`      | String (no coercion)                   |
-| `vale.number()`      | Number (coerces from string)           |
-| `vale.integer()`     | Integer (coerces from string)          |
-| `vale.boolean()`     | Boolean (coerces `"true"` / `"false"`) |
-| `vale.date()`        | Date (coerces from string or number)   |
-| `vale.email()`       | String matching email format           |
-| `vale.uuid()`        | UUID v4 string                         |
-| `vale.objectId()`    | MongoDB-style ObjectId string          |
-| `vale.enum([...])`   | One of the given string literals       |
-| `vale.object({...})` | Object with specified shape            |
-| `vale.array(schema)` | Array of items validated by schema     |
+Schema types
 
-## Modifiers
-
-- **`.optional()`** – `undefined` is valid; output type is `T | undefined`.
-- **`.nullable()`** – `null` is valid; output type is `T | null`.
-- **`.nullish()`** – `null` or `undefined` accepted.
-- **`.default(value)`** – Use `value` when input is `undefined`.
-- **`.into(fn)`** – Transform the parsed value (e.g. string → trimmed string).
-- **`.guard(predicate, message)`** – Refine with a custom check; invalid values produce an issue with the given message.
-
-## Result type
-
-`schema.parse(input)` returns a **discriminated union**:
-
+Method	Description
 ```ts
-type ValeResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; issues: ValeIssue[] };
-
-type ValeIssue = {
-  path: (string | number)[]; // e.g. ["author", "age"]
-  code: string; // e.g. "integer", "email"
-  message: string;
-};
+vale.string()	String
+vale.number()	Number (coerces from string)
+vale.integer()	Integer (coerces from string)
+vale.boolean()	Boolean (coerces "true" / "false")
+vale.date()	Date (coerces from string or number)
+vale.email()	String matching email format
+vale.uuid()	UUID v4 string
+vale.objectId()	MongoDB-style ObjectId string
+vale.enum([...])	One of the given string literals
+vale.object({...})	Object with specified shape
+vale.array(schema)	Array of validated items
 ```
 
-## Throw on failure
 
-Use `valeValidate(schema, input)` to get the value or throw `ValeError` with `issues`:
+---
 
+Modifiers
+
+Schemas can be extended with modifiers.
 ```ts
-import { valeValidate, ValeError } from "vale";
+.optional()
+undefined is accepted. Output type becomes T | undefined.
+
+.nullable()
+null is accepted. Output type becomes T | null.
+
+.nullish()
+null or undefined accepted.
+
+.default(value)
+Use value when input is undefined.
+
+.into(fn)
+Transform parsed value.
+
+vale.string().into((v) => v.trim())
+
+.guard(predicate, message)
+Custom validation refinement.
+
+vale.number().guard((n) => n > 0, "Must be positive")
+```
+
+---
+
+Nested schemas
+
+Schemas can be composed.
+```ts
+const addressSchema = vale.object({
+  city: vale.string(),
+  zip: vale.string(),
+})
+
+const userSchema = vale.object({
+  name: vale.string(),
+  address: addressSchema,
+})
+```
+---
+
+Result type
+```ts
+schema.parse(input) returns a discriminated union.
+
+type ValeResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; issues: ValeIssue[] }
+
+type ValeIssue = {
+  path: (string | number)[]
+  code: string
+  message: string
+}
+```
+Example issue
+```JSON
+{
+  path: ["age"],
+  code: "integer",
+  message: "Expected integer"
+}
+```
+
+---
+
+Throw on failure
+
+Use valeValidate to throw a ValeError.
+```ts
+import { valeValidate, ValeError } from "@felipe.boff/vale"
 
 try {
-  const user = valeValidate(userSchema, rawInput);
-  // user is typed as User
+  const user = valeValidate(userSchema, rawInput)
+  console.log(user)
 } catch (err) {
   if (err instanceof ValeError) {
-    console.log(err.issues);
+    console.log(err.issues)
   }
 }
 ```
 
-## Run the example
+---
 
-```bash
-npm run example
-```
+License
 
-Runs `examples/usage.ts`, which demonstrates primitives, objects, arrays, enums, optional/default, nested shapes, and error handling.
-
-## Build
-
-```bash
-npm run build
-```
-
-Output is in `dist/` (ESM with `.d.ts`).
-
-## License
-
-ISC · [Felipe Boff](https://github.com/felipeboff)
+ISC
+Felipe Boff
