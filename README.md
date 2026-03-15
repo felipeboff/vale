@@ -31,11 +31,15 @@ npm
 ```bash
 npm i @felipe.boff/vale
 ```
+
 yarn
+
 ```bash
 yarn add @felipe.boff/vale
 ```
+
 pnpm
+
 ```bash
 pnpm add @felipe.boff/vale
 ```
@@ -43,28 +47,29 @@ pnpm add @felipe.boff/vale
 ---
 
 Quick start
+
 ```ts
-import { vale, type InferVale } from "@felipe.boff/vale"
+import { vale, type InferVale } from "@felipe.boff/vale";
 
 const userSchema = vale.object({
   name: vale.string(),
   age: vale.integer(),
   email: vale.email(),
   active: vale.boolean().default(true),
-})
+});
 
-type User = InferVale<typeof userSchema>
+type User = InferVale<typeof userSchema>;
 
 const result = userSchema.parse({
   name: "Jane",
   age: 28,
   email: "jane@example.com",
-})
+});
 
 if (result.ok) {
-  console.log(result.value)
+  console.log(result.value);
 } else {
-  console.log(result.issues)
+  console.log(result.issues);
 }
 ```
 
@@ -72,7 +77,8 @@ if (result.ok) {
 
 Schema types
 
-Method	Description
+Method Description
+
 ```ts
 vale.string()	String
 vale.number()	Number (coerces from string)
@@ -87,12 +93,12 @@ vale.object({...})	Object with specified shape
 vale.array(schema)	Array of validated items
 ```
 
-
 ---
 
 Modifiers
 
 Schemas can be extended with modifiers.
+
 ```ts
 .optional()
 undefined is accepted. Output type becomes T | undefined.
@@ -122,20 +128,23 @@ vale.number().guard((n) => n > 0, "Must be positive")
 Nested schemas
 
 Schemas can be composed.
+
 ```ts
 const addressSchema = vale.object({
   city: vale.string(),
   zip: vale.string(),
-})
+});
 
 const userSchema = vale.object({
   name: vale.string(),
   address: addressSchema,
-})
+});
 ```
+
 ---
 
 Result type
+
 ```ts
 schema.parse(input) returns a discriminated union.
 
@@ -149,8 +158,10 @@ type ValeIssue = {
   message: string
 }
 ```
+
 Example issue
-```JSON
+
+```
 {
   path: ["age"],
   code: "integer",
@@ -163,15 +174,16 @@ Example issue
 Throw on failure
 
 Use valeValidate to throw a ValeError.
+
 ```ts
-import { valeValidate, ValeError } from "@felipe.boff/vale"
+import { valeValidate, ValeError } from "@felipe.boff/vale";
 
 try {
-  const user = valeValidate(userSchema, rawInput)
-  console.log(user)
+  const user = valeValidate(userSchema, rawInput);
+  console.log(user);
 } catch (err) {
   if (err instanceof ValeError) {
-    console.log(err.issues)
+    console.log(err.issues);
   }
 }
 ```
