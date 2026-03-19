@@ -1,6 +1,6 @@
 {
   "name": "@felipe.boff/vale",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "TypeScript-first runtime validator with coercion, composable schemas, and path-based error reporting",
   "type": "module",
   "main": "dist/index.js",
@@ -17,7 +17,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias --resolve-full-paths --resolve-full-extension .js",
     "example": "tsx examples/usage.ts",
     "prepublishOnly": "npm run build",
     "test": "vitest",
@@ -41,6 +41,7 @@
   "homepage": "https://github.com/felipeboff/vale#readme",
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.18",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
