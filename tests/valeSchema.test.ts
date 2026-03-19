@@ -31,7 +31,9 @@ describe("makeVale", () => {
     });
 
     it("parses value otherwise", () => {
-      const schema = makeVale<string>((input) => valeOk(String(input))).optional();
+      const schema = makeVale<string>((input) =>
+        valeOk(String(input)),
+      ).optional();
       const r = schema.parse("x");
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value).toBe("x");
@@ -47,7 +49,9 @@ describe("makeVale", () => {
     });
 
     it("parses value otherwise", () => {
-      const schema = makeVale<string>((input) => valeOk(String(input))).nullable();
+      const schema = makeVale<string>((input) =>
+        valeOk(String(input)),
+      ).nullable();
       const r = schema.parse("x");
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value).toBe("x");
@@ -62,6 +66,20 @@ describe("makeVale", () => {
       if (r.ok) expect(r.value).toBeUndefined();
     });
 
+    it("returns undefined for empty string", () => {
+      const schema = makeVale<string>(() => valeFail([])).nullish();
+      const r = schema.parse("");
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value).toBeUndefined();
+    });
+
+    it('returns null for string "null"', () => {
+      const schema = makeVale<string>(() => valeFail([])).nullish();
+      const r = schema.parse("null");
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value).toBeNull();
+    });
+
     it("returns null for null", () => {
       const schema = makeVale<string>(() => valeFail([])).nullish();
       const r = schema.parse(null);
@@ -70,7 +88,9 @@ describe("makeVale", () => {
     });
 
     it("parses value otherwise", () => {
-      const schema = makeVale<string>((input) => valeOk(String(input))).nullish();
+      const schema = makeVale<string>((input) =>
+        valeOk(String(input)),
+      ).nullish();
       const r = schema.parse("x");
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value).toBe("x");
@@ -85,8 +105,31 @@ describe("makeVale", () => {
       if (r.ok) expect(r.value).toBe("default");
     });
 
+    it("returns default for empty string", () => {
+      const schema = makeVale<string>(() => valeFail([])).default("default");
+      const r = schema.parse("");
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value).toBe("default");
+    });
+
+    it('returns default for string "null"', () => {
+      const schema = makeVale<string>(() => valeFail([])).default("default");
+      const r = schema.parse("null");
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value).toBe("default");
+    });
+
+    it("returns default for null", () => {
+      const schema = makeVale<string>(() => valeFail([])).default("default");
+      const r = schema.parse(null);
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value).toBe("default");
+    });
+
     it("parses value otherwise", () => {
-      const schema = makeVale<string>((input) => valeOk(String(input))).default("default");
+      const schema = makeVale<string>((input) => valeOk(String(input))).default(
+        "default",
+      );
       const r = schema.parse("x");
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value).toBe("x");
@@ -95,16 +138,18 @@ describe("makeVale", () => {
 
   describe("into", () => {
     it("transforms value when parse succeeds", () => {
-      const schema = makeVale<number>((input) => valeOk(Number(input))).into((n) => n * 2);
+      const schema = makeVale<number>((input) => valeOk(Number(input))).into(
+        (n) => n * 2,
+      );
       const r = schema.parse("5");
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value).toBe(10);
     });
 
     it("propagates failure", () => {
-      const schema = makeVale<number>(() => valeFail([{ path: [], code: "x", message: "y" }])).into(
-        (n) => n * 2,
-      );
+      const schema = makeVale<number>(() =>
+        valeFail([{ path: [], code: "x", message: "y" }]),
+      ).into((n) => n * 2);
       const r = schema.parse(0);
       expect(r.ok).toBe(false);
     });
@@ -112,14 +157,20 @@ describe("makeVale", () => {
 
   describe("guard", () => {
     it("returns value when guard passes", () => {
-      const schema = makeVale<number>((input) => valeOk(Number(input))).guard((n) => n > 0, "must be positive");
+      const schema = makeVale<number>((input) => valeOk(Number(input))).guard(
+        (n) => n > 0,
+        "must be positive",
+      );
       const r = schema.parse("5");
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value).toBe(5);
     });
 
     it("returns single issue when guard fails", () => {
-      const schema = makeVale<number>((input) => valeOk(Number(input))).guard((n) => n > 0, "must be positive");
+      const schema = makeVale<number>((input) => valeOk(Number(input))).guard(
+        (n) => n > 0,
+        "must be positive",
+      );
       const r = schema.parse("0");
       expect(r.ok).toBe(false);
       if (!r.ok) {
@@ -130,10 +181,9 @@ describe("makeVale", () => {
     });
 
     it("propagates parse failure", () => {
-      const schema = makeVale<number>(() => valeFail([{ path: ["x"], code: "a", message: "b" }])).guard(
-        () => true,
-        "msg",
-      );
+      const schema = makeVale<number>(() =>
+        valeFail([{ path: ["x"], code: "a", message: "b" }]),
+      ).guard(() => true, "msg");
       const r = schema.parse(0);
       expect(r.ok).toBe(false);
       if (!r.ok) expect(r.issues[0].code).toBe("a");
