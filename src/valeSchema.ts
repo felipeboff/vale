@@ -12,29 +12,39 @@ export const makeVale = <T>(
 
     optional() {
       return makeVale<T | undefined>((input, path) => {
-        if (input === undefined) return { ok: true, value: undefined };
+        if (input === undefined || input === "")
+          return { ok: true, value: undefined };
         return parse(input, path);
       });
     },
 
     nullable() {
       return makeVale<T | null>((input, path) => {
-        if (input === null) return { ok: true, value: null };
+        if (input === null || input === "null")
+          return { ok: true, value: null };
         return parse(input, path);
       });
     },
 
     nullish() {
       return makeVale<T | null | undefined>((input, path) => {
-        if (input === undefined || input === null)
-          return { ok: true, value: input as null | undefined };
+        if (input === undefined || input === "")
+          return { ok: true, value: undefined };
+        if (input === null || input === "null")
+          return { ok: true, value: null };
         return parse(input, path);
       });
     },
 
     default(value: T) {
       return makeVale<T>((input, path) => {
-        if (input === undefined) return { ok: true, value };
+        if (
+          input === undefined ||
+          input === null ||
+          input === "" ||
+          input === "null"
+        )
+          return { ok: true, value };
         return parse(input, path);
       });
     },

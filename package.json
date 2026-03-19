@@ -1,6 +1,6 @@
 {
   "name": "@felipe.boff/vale",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TypeScript-first runtime validator with coercion, composable schemas, and path-based error reporting",
   "type": "module",
   "main": "dist/index.js",

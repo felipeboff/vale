@@ -107,10 +107,10 @@ undefined is accepted. Output type becomes T | undefined.
 null is accepted. Output type becomes T | null.
 
 .nullish()
-null or undefined accepted.
+null or undefined accepted. Also treats `""` and `"null"` (query-string values) as nullish and returns `undefined`.
 
 .default(value)
-Use value when input is undefined.
+Use value when input is `undefined`, `null`, `""`, or `"null"`.
 
 .into(fn)
 Transform parsed value.
