@@ -2,7 +2,7 @@
 
 TypeScript-first runtime validator with coercion, composable schemas, and path-based error reporting.
 
-Validate and parse unknown input (for example APIs, forms, or config) into typed values. Vale returns a result object instead of throwing so validation failures can be handled explicitly. When needed you can use `valeValidate` to throw on failure.
+Validate and resolve unknown input (for example APIs, forms, or config) into typed values. Vale returns a result object instead of throwing so validation failures can be handled explicitly. When needed you can use `valeValidate` to throw on failure.
 
 ## Features
 
@@ -60,7 +60,7 @@ const userSchema = vale.object({
 
 type User = InferVale<typeof userSchema>;
 
-const user = userSchema.parse({
+const user = userSchema.resolve({
   name: "Jane",
   age: 28,
   email: "jane@example.com",
@@ -69,7 +69,7 @@ const user = userSchema.parse({
 console.log(user);
 
 // If you want the non-throwing result object:
-const result = userSchema.safeParse({
+const result = userSchema.probe({
   name: "Jane",
   age: 28,
   email: "invalid-email",
@@ -126,7 +126,7 @@ Custom validation refinement.
 
 vale.number().guard((n) => n > 0, "Must be positive")
 
-.strict()
+.lock()
 Rejects unrecognized object keys (best-effort key-set comparison).
 ```
 
@@ -153,7 +153,7 @@ const userSchema = vale.object({
 Result type
 
 ```ts
-schema.safeParse(input) returns a discriminated union.
+schema.probe(input) returns a discriminated union.
 
 type ValeResult<T> =
   | { ok: true; value: T }
@@ -180,7 +180,7 @@ Example issue
 
 Throw on failure
 
-Use `schema.parse()` (or `valeValidate`) to throw a `ValeError`.
+Use `schema.resolve()` (or `valeValidate`) to throw a `ValeError`.
 
 ```ts
 import { valeValidate, ValeError } from "@felipe.boff/vale";

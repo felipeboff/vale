@@ -6,13 +6,13 @@ import { createVale } from "../../schemas/createVale";
 const vale = createVale();
 
 describe("valeValidate", () => {
-  it("returns value when schema parse succeeds", () => {
+  it("returns value when schema resolve succeeds", () => {
     const schema = vale.string();
     const result = valeValidate(schema, "hello");
     expect(result).toBe("hello");
   });
 
-  it("throws ValeError with issues when schema parse fails", () => {
+  it("throws ValeError with issues when schema resolve fails", () => {
     const schema = vale.number();
     expect(() => valeValidate(schema, "not a number")).toThrow(ValeError);
 

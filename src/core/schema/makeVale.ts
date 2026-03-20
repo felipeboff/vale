@@ -1,100 +1,57 @@
-import { ValeError } from "../errors/ValeError";
-import { valeSingleIssue } from "../result/helpers";
-import { applyStrictValidation } from "./strict";
 import type {
   ValeNonNullish,
   ValePath,
   ValeResult,
 } from "../../shared/types/common";
 import type { ValeSchema } from "../../shared/types/schema";
+import {
+  createDefaultParser,
+  createGuardParser,
+  createIntoParser,
+  createLockParser,
+  createNullableParser,
+  createNullishParser,
+  createOptionalParser,
+  parseOrThrow,
+} from "./modifiers";
 
 export const makeVale = <T>(
   baseParse: (input: unknown, path: ValePath) => ValeResult<T>,
 ): ValeSchema<T> => {
-  const safeParse = (input: unknown, path: ValePath = []): ValeResult<T> =>
+  const probe = (input: unknown, path: ValePath = []): ValeResult<T> =>
     baseParse(input, path);
-
-  const parse = (input: unknown, path: ValePath = []): T => {
-    const result = safeParse(input, path);
-    if (result.ok) return result.value;
-    throw new ValeError(result.issues);
-  };
+  const resolve = parseOrThrow(probe);
 
   return {
-    parse,
-    safeParse,
+    resolve,
+    probe,
 
     optional() {
-      return makeVale<T | undefined>((input, path) => {
-        if (input === undefined || input === "") {
-          return { ok: true, value: undefined };
-        }
-
-        return safeParse(input, path);
-      });
+      return makeVale<T | undefined>(createOptionalParser(probe));
     },
 
     nullable() {
-      return makeVale<T | null>((input, path) => {
-        if (input === null || input === "null") {
-          return { ok: true, value: null };
-        }
-
-        return safeParse(input, path);
-      });
+      return makeVale<T | null>(createNullableParser(probe));
     },
 
     nullish() {
-      return makeVale<T | null | undefined>((input, path) => {
-        if (input === undefined || input === "") {
-          return { ok: true, value: undefined };
-        }
-
-        if (input === null || input === "null") {
-          return { ok: true, value: null };
-        }
-
-        return safeParse(input, path);
-      });
+      return makeVale<T | null | undefined>(createNullishParser(probe));
     },
 
     default(value: ValeNonNullish<T>) {
-      return makeVale<ValeNonNullish<T>>((input, path) => {
-        if (
-          input === undefined ||
-          input === null ||
-          input === "" ||
-          input === "null"
-        ) {
-          return { ok: true, value };
-        }
-
-        return safeParse(input, path) as ValeResult<ValeNonNullish<T>>;
-      });
+      return makeVale<ValeNonNullish<T>>(createDefaultParser(probe, value));
     },
 
     into<U>(fn: (value: T) => U) {
-      return makeVale<U>((input, path) => {
-        const result = safeParse(input, path);
-        return result.ok ? { ok: true, value: fn(result.value) } : result;
-      });
+      return makeVale<U>(createIntoParser(probe, fn));
     },
 
     guard(guard: (value: T) => boolean, message: string) {
-      return makeVale<T>((input, path) => {
-        const result = safeParse(input, path);
-        if (!result.ok) return result;
-
-        return guard(result.value)
-          ? result
-          : valeSingleIssue(path, "refine", message);
-      });
+      return makeVale<T>(createGuardParser(probe, guard, message));
     },
 
-    strict() {
-      return makeVale<T>((input, path) =>
-        applyStrictValidation(input, safeParse(input, path), path),
-      );
+    lock() {
+      return makeVale<T>(createLockParser(probe));
     },
   };
 };

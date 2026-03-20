@@ -102,6 +102,11 @@ describe("valeParsers", () => {
       expect(result?.toISOString()).toBe("2025-03-01T00:00:00.000Z");
     });
 
+    it("returns undefined for YYYY-MM-DD overflow that creates invalid date", () => {
+      const giantYear = `${"9".repeat(400)}-01-01`;
+      expect(valeDateParser(giantYear)).toBeUndefined();
+    });
+
     it("parses generic date string", () => {
       expect(valeDateParser("2025-03-01T10:00:00.000Z")).toBeInstanceOf(Date);
     });
