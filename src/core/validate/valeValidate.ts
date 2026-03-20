@@ -1,4 +1,4 @@
-import type { ValeSchema } from "./valeTypes";
+import type { ValeSchema } from "../../shared/types/schema";
 
 export const valeValidate = <T>(schema: ValeSchema<T>, input: unknown): T =>
   schema.parse(input);

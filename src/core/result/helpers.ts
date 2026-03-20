@@ -1,4 +1,4 @@
-import type { ValeIssue, ValePath, ValeResult } from "./valeTypes";
+import type { ValeIssue, ValePath, ValeResult } from "../../shared/types/common";
 
 export const valeOk = <T>(value: T): ValeResult<T> => ({ ok: true, value });
 
@@ -17,12 +17,16 @@ export const valeMergeResults = <T extends Record<string, unknown>>(
   entries: { key: keyof T; res: ValeResult<unknown> }[],
 ): ValeResult<T> => {
   const issues: ValeIssue[] = [];
-  const out: Record<string, unknown> = {};
+  const output: Record<string, unknown> = {};
 
-  for (const e of entries) {
-    if (!e.res.ok) issues.push(...e.res.issues);
-    else out[e.key as string] = e.res.value;
+  for (const entry of entries) {
+    if (!entry.res.ok) {
+      issues.push(...entry.res.issues);
+      continue;
+    }
+
+    output[entry.key as string] = entry.res.value;
   }
 
-  return issues.length ? valeFail(issues) : valeOk(out as T);
+  return issues.length ? valeFail(issues) : valeOk(output as T);
 };

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { valeIsRecord } from "../src/valeTypes";
+import { valeIsRecord } from "./valeIsRecord";
 
 describe("valeIsRecord", () => {
   it("returns true for plain object", () => {

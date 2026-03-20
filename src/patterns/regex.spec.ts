@@ -1,10 +1,8 @@
 import { describe, it, expect } from "vitest";
-import {
-  valeEmailRegex,
-  valeUuidRegex,
-  valeObjectIdRegex,
-  valeDateRegex,
-} from "../src/valeRegex";
+import { valeEmailRegex } from "./email";
+import { valeUuidRegex } from "./uuid";
+import { valeObjectIdRegex } from "./objectId";
+import { valeDateRegex } from "./date";
 
 describe("valeRegex", () => {
   it("valeEmailRegex matches valid emails", () => {
@@ -24,10 +22,10 @@ describe("valeRegex", () => {
   });
 
   it("valeDateRegex matches YYYY-MM-DD and captures groups", () => {
-    const m = valeDateRegex.exec("2025-03-01");
-    expect(m).not.toBeNull();
-    expect(m![1]).toBe("2025");
-    expect(m![2]).toBe("03");
-    expect(m![3]).toBe("01");
+    const match = valeDateRegex.exec("2025-03-01");
+    expect(match).not.toBeNull();
+    expect(match![1]).toBe("2025");
+    expect(match![2]).toBe("03");
+    expect(match![3]).toBe("01");
   });
 });

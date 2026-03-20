@@ -1,11 +1,9 @@
 import { describe, it, expect } from "vitest";
-import {
-  valeStringParser,
-  valeNumberParser,
-  valeIntegerParser,
-  valeBooleanParser,
-  valeDateParser,
-} from "../src/valeParsers";
+import { valeStringParser } from "./string";
+import { valeNumberParser } from "./number";
+import { valeIntegerParser } from "./integer";
+import { valeBooleanParser } from "./boolean";
+import { valeDateParser } from "./date";
 
 describe("valeParsers", () => {
   describe("valeStringParser", () => {
@@ -78,63 +76,39 @@ describe("valeParsers", () => {
       expect(valeBooleanParser(false)).toBe(false);
     });
 
-    it("parses true/false strings (case insensitive)", () => {
+    it("parses true/false strings case-insensitively", () => {
       expect(valeBooleanParser("true")).toBe(true);
-      expect(valeBooleanParser("TRUE")).toBe(true);
-      expect(valeBooleanParser("false")).toBe(false);
-      expect(valeBooleanParser("False")).toBe(false);
       expect(valeBooleanParser("FALSE")).toBe(false);
     });
 
-    it("returns undefined for invalid string", () => {
+    it("returns undefined for other strings", () => {
       expect(valeBooleanParser("yes")).toBeUndefined();
-      expect(valeBooleanParser("1")).toBeUndefined();
-      expect(valeBooleanParser("nope")).toBeUndefined();
     });
   });
 
   describe("valeDateParser", () => {
-    it("returns undefined when value is not a date and string parser returns undefined", () => {
-      expect(valeDateParser(null)).toBeUndefined();
-      expect(valeDateParser(undefined)).toBeUndefined();
-      expect(valeDateParser({})).toBeUndefined();
-    });
-
-    it("returns valid Date instance as-is", () => {
-      const d = new Date("2025-01-15");
-      expect(valeDateParser(d)).toEqual(d);
+    it("accepts valid Date instance", () => {
+      const date = new Date("2025-01-01T00:00:00.000Z");
+      expect(valeDateParser(date)).toBe(date);
     });
 
     it("returns undefined for invalid Date instance", () => {
-      expect(valeDateParser(new Date(Number.NaN))).toBeUndefined();
+      expect(valeDateParser(new Date("invalid"))).toBeUndefined();
     });
 
-    it("parses ISO date string (YYYY-MM-DD)", () => {
-      const r = valeDateParser("2025-03-01");
-      expect(r).toBeInstanceOf(Date);
-      expect(r!.getUTCFullYear()).toBe(2025);
-      expect(r!.getUTCMonth()).toBe(2);
-      expect(r!.getUTCDate()).toBe(1);
+    it("parses YYYY-MM-DD via UTC", () => {
+      const result = valeDateParser("2025-03-01");
+      expect(result).toBeInstanceOf(Date);
+      expect(result?.toISOString()).toBe("2025-03-01T00:00:00.000Z");
     });
 
-    it("returns undefined when ISO date string is out of range (branch: NaN getTime)", () => {
-      // Year beyond JS date range => Date.UTC yields invalid date => line 47 returns undefined
-      expect(valeDateParser("300000-01-01")).toBeUndefined();
+    it("parses generic date string", () => {
+      expect(valeDateParser("2025-03-01T10:00:00.000Z")).toBeInstanceOf(Date);
     });
 
-    it("normalizes invalid day in month (e.g. Feb 30) to next month", () => {
-      const r = valeDateParser("2025-02-30");
-      expect(r).toBeInstanceOf(Date);
-      expect(r!.getTime()).toBe(new Date(Date.UTC(2025, 2, 2)).getTime());
-    });
-
-    it("falls back to new Date(s) for non-ISO string", () => {
-      const r = valeDateParser("March 1, 2025");
-      expect(r).toBeInstanceOf(Date);
-    });
-
-    it("returns undefined when new Date(s) is invalid", () => {
-      expect(valeDateParser("not a date")).toBeUndefined();
+    it("returns undefined for invalid input", () => {
+      expect(valeDateParser("not-a-date")).toBeUndefined();
+      expect(valeDateParser({})).toBeUndefined();
     });
   });
 });

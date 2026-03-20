@@ -19,7 +19,7 @@ import {
   valeUuidRegex,
   valeObjectIdRegex,
   valeDateRegex,
-} from "../src/index";
+} from "./index";
 
 describe("index exports", () => {
   it("re-exports valeValidate and ValeError", () => {
@@ -34,8 +34,11 @@ describe("index exports", () => {
   });
 
   it("re-exports makeVale and result helpers", () => {
-    const s = makeVale<number>((x) => (typeof x === "number" ? valeOk(x) : valeFail([])));
-    expect(s.safeParse(1).ok).toBe(true);
+    const schema = makeVale<number>((input) =>
+      typeof input === "number" ? valeOk(input) : valeFail([]),
+    );
+
+    expect(schema.safeParse(1).ok).toBe(true);
     expect(valeSingleIssue([], "x", "y").ok).toBe(false);
     expect(valeMergeResults([{ key: "a", res: valeOk(1) }]).ok).toBe(true);
   });
