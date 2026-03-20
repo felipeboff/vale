@@ -29,13 +29,13 @@ describe("index exports", () => {
   });
 
   it("re-exports vale and createVale", () => {
-    expect(vale.string().parse("a").ok).toBe(true);
-    expect(createVale().number().parse(1).ok).toBe(true);
+    expect(vale.string().safeParse("a").ok).toBe(true);
+    expect(createVale().number().safeParse(1).ok).toBe(true);
   });
 
   it("re-exports makeVale and result helpers", () => {
     const s = makeVale<number>((x) => (typeof x === "number" ? valeOk(x) : valeFail([])));
-    expect(s.parse(1).ok).toBe(true);
+    expect(s.safeParse(1).ok).toBe(true);
     expect(valeSingleIssue([], "x", "y").ok).toBe(false);
     expect(valeMergeResults([{ key: "a", res: valeOk(1) }]).ok).toBe(true);
   });

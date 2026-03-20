@@ -189,7 +189,7 @@ export const createVale = () => {
         const entries = Object.keys(shape).map((k) => {
           const key = k as keyof T;
           const schema = shape[key];
-          const res = schema.parse((input as Record<string, unknown>)[k], [
+          const res = schema.safeParse((input as Record<string, unknown>)[k], [
             ...path,
             k,
           ]);
@@ -210,7 +210,7 @@ export const createVale = () => {
         const out: T[] = [];
 
         input.forEach((v, i) => {
-          const r = item.parse(v, [...path, i]);
+          const r = item.safeParse(v, [...path, i]);
           if (!r.ok) issues.push(...r.issues);
           else out.push(r.value);
         });

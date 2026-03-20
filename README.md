@@ -60,17 +60,21 @@ const userSchema = vale.object({
 
 type User = InferVale<typeof userSchema>;
 
-const result = userSchema.parse({
+const user = userSchema.parse({
   name: "Jane",
   age: 28,
   email: "jane@example.com",
 });
 
-if (result.ok) {
-  console.log(result.value);
-} else {
-  console.log(result.issues);
-}
+console.log(user);
+
+// If you want the non-throwing result object:
+const result = userSchema.safeParse({
+  name: "Jane",
+  age: 28,
+  email: "invalid-email",
+});
+if (!result.ok) console.log(result.issues);
 ```
 
 ---
@@ -121,6 +125,9 @@ vale.string().into((v) => v.trim())
 Custom validation refinement.
 
 vale.number().guard((n) => n > 0, "Must be positive")
+
+.strict()
+Rejects unrecognized object keys (best-effort key-set comparison).
 ```
 
 ---
@@ -146,7 +153,7 @@ const userSchema = vale.object({
 Result type
 
 ```ts
-schema.parse(input) returns a discriminated union.
+schema.safeParse(input) returns a discriminated union.
 
 type ValeResult<T> =
   | { ok: true; value: T }
@@ -173,7 +180,7 @@ Example issue
 
 Throw on failure
 
-Use valeValidate to throw a ValeError.
+Use `schema.parse()` (or `valeValidate`) to throw a `ValeError`.
 
 ```ts
 import { valeValidate, ValeError } from "@felipe.boff/vale";

@@ -17,13 +17,13 @@ import {
 // ---------------------------------------------------------------------------
 
 const stringResult = vale.string().parse("hello");
-console.log("string:", stringResult); // { ok: true, value: "hello" }
+console.log("string:", stringResult); // "hello"
 
 const numberResult = vale.number().parse("42");
-console.log("number (coerced):", numberResult); // { ok: true, value: 42 }
+console.log("number (coerced):", numberResult); // 42
 
 const booleanResult = vale.boolean().parse("true");
-console.log("boolean (coerced):", booleanResult); // { ok: true, value: true }
+console.log("boolean (coerced):", booleanResult); // true
 
 // ---------------------------------------------------------------------------
 // Object schema
@@ -45,31 +45,34 @@ const userInput = {
   // active omitted – will use default
 };
 
-const userResult = userSchema.parse(userInput);
-if (userResult.ok) {
-  console.log("user:", userResult.value);
-  // { name: "Jane", age: 28, email: "jane@example.com", active: true }
-}
+const user = userSchema.parse(userInput);
+console.log("user:", user);
+// { name: "Jane", age: 28, email: "jane@example.com", active: true }
+
+const strictUserSchema = userSchema.strict();
+const strictUserProbe = strictUserSchema.safeParse({ ...userInput, extra: "x" });
+console.log("strict (extra key):", strictUserProbe);
 
 // ---------------------------------------------------------------------------
 // Array and optional
 // ---------------------------------------------------------------------------
 
 const tagsSchema = vale.array(vale.string());
-const tagsResult = tagsSchema.parse(["a", "b", "c"]);
-console.log("array:", tagsResult); // { ok: true, value: ["a", "b", "c"] }
+const tags = tagsSchema.parse(["a", "b", "c"]);
+console.log("array:", tags); // ["a", "b", "c"]
 
 const optionalName = vale.string().optional();
-console.log("optional (present):", optionalName.parse("Alice")); // { ok: true, value: "Alice" }
-console.log("optional (absent):", optionalName.parse(undefined)); // { ok: true, value: undefined }
+console.log("optional (present):", optionalName.parse("Alice")); // "Alice"
+console.log("optional (absent):", optionalName.parse(undefined)); // undefined
 
 // ---------------------------------------------------------------------------
 // Enum
 // ---------------------------------------------------------------------------
 
 const roleSchema = vale.enum(["admin", "user", "guest"]);
-console.log("enum:", roleSchema.parse("admin")); // { ok: true, value: "admin" }
-console.log("enum (invalid):", roleSchema.parse("superuser")); // { ok: false, issues: [...] }
+console.log("enum:", roleSchema.parse("admin")); // "admin"
+const roleInvalid = roleSchema.safeParse("superuser");
+console.log("enum (invalid):", roleInvalid); // { ok: false, issues: [...] }
 
 // ---------------------------------------------------------------------------
 // valeValidate – throw on failure
@@ -101,9 +104,9 @@ function validateAndLog<T>(result: ValeResult<T>, label: string): void {
   }
 }
 
-validateAndLog(vale.email().parse("invalid"), "email");
+validateAndLog(vale.email().safeParse("invalid"), "email");
 validateAndLog(
-  vale.uuid().parse("550e8400-e29b-41d4-a716-446655440000"),
+  vale.uuid().safeParse("550e8400-e29b-41d4-a716-446655440000"),
   "uuid",
 );
 
@@ -122,12 +125,10 @@ const postSchema = vale.object({
 
 type Post = InferVale<typeof postSchema>;
 
-const postResult = postSchema.parse({
+const post = postSchema.parse({
   title: "Hello Vale",
   tags: ["validation", "typescript"],
   author: { name: "Dev", role: "admin" },
 });
 
-if (postResult.ok) {
-  console.log("post:", postResult.value);
-}
+console.log("post:", post);

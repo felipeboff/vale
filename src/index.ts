@@ -28,6 +28,6 @@ export {
   valeDateRegex,
 } from "./valeRegex";
 export { createVale } from "./valeSchemas";
-export { vale } from "./vale";
+export { vale, v } from "./vale";
 export { ValeError } from "./ValeError";
 export { valeValidate } from "./valeValidate";
