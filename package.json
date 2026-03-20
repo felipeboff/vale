@@ -21,7 +21,7 @@
     "resolve": "tsc-alias --resolve-full-paths --resolve-full-extension .js",
     "build": "npm run clean && tsc && npm run resolve",
     "example": "tsx examples/usage.ts",
-    "release": "npm run build && npm run publish",
+    "release": "npm run build && npm publish",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
