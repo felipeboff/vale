@@ -2,7 +2,11 @@ import { makeVale } from "../../core/schema/makeVale";
 import { valeMergeResults, valeSingleIssue } from "../../core/result/helpers";
 import { valeIsRecord } from "../../shared/guards/valeIsRecord";
 import type { ValeResult } from "../../shared/types/common";
-import type { ValeObjectOutput, ValeSchema, ValeShape } from "../../shared/types/schema";
+import type {
+  ValeObjectOutput,
+  ValeSchema,
+  ValeShape,
+} from "../../shared/types/schema";
 import { defaultMessage } from "../utils/defaultMessage";
 
 export const createObjectSchema = <T extends ValeShape>(
@@ -15,7 +19,7 @@ export const createObjectSchema = <T extends ValeShape>(
 
     const entries = Object.keys(shape).map((key) => {
       const schema = shape[key as keyof T];
-      const result = schema.safeParse(input[key], [...path, key]);
+      const result = schema.probe(input[key], [...path, key]);
 
       return {
         key: key as keyof ValeObjectOutput<T>,

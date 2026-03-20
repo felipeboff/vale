@@ -14,7 +14,7 @@ export const createArraySchema = <T>(item: ValeSchema<T>): ValeSchema<T[]> =>
     const output: T[] = [];
 
     input.forEach((value, index) => {
-      const result = item.safeParse(value, [...path, index]);
+      const result = item.probe(value, [...path, index]);
 
       if (!result.ok) {
         issues.push(...result.issues);
