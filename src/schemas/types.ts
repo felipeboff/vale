@@ -5,8 +5,14 @@ import type {
   ValeShape,
 } from "../shared/types/schema";
 
+export type ValeStringSchema = ValeSchema<string> & {
+  cpf(message?: string): ValeSchema<string>;
+  cnpj(message?: string): ValeSchema<string>;
+  cpfCnpj(message?: string): ValeSchema<string>;
+};
+
 export type ValeFactory = {
-  string(message?: string): ValeSchema<string>;
+  string(message?: string): ValeStringSchema;
   number(message?: string): ValeSchema<number>;
   integer(message?: string): ValeSchema<number>;
   boolean(message?: string): ValeSchema<boolean>;

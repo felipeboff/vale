@@ -21,8 +21,13 @@ export { valeEmailRegex } from "./patterns/email";
 export { valeUuidRegex } from "./patterns/uuid";
 export { valeObjectIdRegex } from "./patterns/objectId";
 export { valeDateRegex } from "./patterns/date";
+export {
+  formatValidCpf,
+  formatValidCnpj,
+  formatValidCpfOrCnpj,
+} from "./patterns/cpfCnpj";
 export { createVale } from "./schemas/createVale";
-export type { ValeFactory } from "./schemas/types";
+export type { ValeFactory, ValeStringSchema } from "./schemas/types";
 export { vale, v } from "./runtime/vale";
 export { ValeError } from "./core/errors/ValeError";
 export { valeValidate } from "./core/validate/valeValidate";

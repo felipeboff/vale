@@ -26,6 +26,22 @@ const booleanResult = vale.boolean().resolve("true");
 console.log("boolean (coerced):", booleanResult); // true
 
 // ---------------------------------------------------------------------------
+// CPF / CNPJ (chained on string — use .cpf() / .cnpj() / .cpfCnpj() before .optional())
+// ---------------------------------------------------------------------------
+
+const cpfFormatted = vale.string().cpf().resolve("39053344705");
+console.log("cpf:", cpfFormatted); // "390.533.447-05"
+
+const cnpjFormatted = vale.string().cnpj().resolve("04252011000110");
+console.log("cnpj:", cnpjFormatted); // "04.252.011/0001-10"
+
+const taxId = vale.string().cpfCnpj().resolve("04252011000110");
+console.log("cpf or cnpj:", taxId);
+
+const optionalCpf = vale.string().cpf().optional().resolve(undefined);
+console.log("optional cpf (absent):", optionalCpf); // undefined
+
+// ---------------------------------------------------------------------------
 // Object schema
 // ---------------------------------------------------------------------------
 

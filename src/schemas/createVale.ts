@@ -1,6 +1,3 @@
-import {
-  valeStringParser,
-} from "../parsers/string";
 import { valeNumberParser } from "../parsers/number";
 import { valeIntegerParser } from "../parsers/integer";
 import { valeBooleanParser } from "../parsers/boolean";
@@ -14,9 +11,10 @@ import { createCoercionSchema } from "./builders/coercion";
 import { createEnumSchema } from "./builders/enum";
 import { createObjectSchema } from "./builders/object";
 import { createPatternSchema } from "./builders/pattern";
+import { createStringSchema } from "./builders/string";
 
 export const createVale = (): ValeFactory => ({
-  string: (message) => createCoercionSchema("string", valeStringParser, message),
+  string: (message) => createStringSchema(message),
   number: (message) => createCoercionSchema("number", valeNumberParser, message),
   integer: (message) =>
     createCoercionSchema("integer", valeIntegerParser, message),
