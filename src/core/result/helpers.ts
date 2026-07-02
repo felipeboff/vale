@@ -13,11 +13,26 @@ export const valeSingleIssue = (
   message: string,
 ): ValeResult<never> => valeFail([{ path, code, message }]);
 
-export const valeMergeResults = <T extends Record<string, unknown>>(
-  entries: { key: keyof T; res: ValeResult<unknown> }[],
-): ValeResult<T> => {
+type MergeEntry<K extends PropertyKey, V> = { key: K; res: ValeResult<V> };
+
+export type MergeOutput<
+  Entries extends readonly MergeEntry<PropertyKey, unknown>[],
+> = {
+  [E in Entries[number] as E["key"]]: Extract<
+    Entries[number],
+    { key: E["key"] }
+  > extends { res: ValeResult<infer V> }
+    ? V
+    : never;
+};
+
+export const valeMergeResults = <
+  const Entries extends readonly MergeEntry<PropertyKey, unknown>[],
+>(
+  entries: Entries,
+): ValeResult<MergeOutput<Entries>> => {
   const issues: ValeIssue[] = [];
-  const output: Record<string, unknown> = {};
+  const output: Record<PropertyKey, unknown> = {};
 
   for (const entry of entries) {
     if (!entry.res.ok) {
@@ -25,8 +40,10 @@ export const valeMergeResults = <T extends Record<string, unknown>>(
       continue;
     }
 
-    output[entry.key as string] = entry.res.value;
+    output[entry.key] = entry.res.value;
   }
 
-  return issues.length ? valeFail(issues) : valeOk(output as T);
+  return issues.length
+    ? valeFail(issues)
+    : valeOk(output as MergeOutput<Entries>);
 };

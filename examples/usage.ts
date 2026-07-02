@@ -72,6 +72,20 @@ const strictUserProbe = strictUserSchema.probe({
 });
 console.log("lock (extra key):", strictUserProbe);
 
+const strictApiSchema = vale.strictObject({
+  name: vale.string(),
+  email: vale.email(),
+});
+
+type StrictApiBody = InferVale<typeof strictApiSchema>;
+
+const loosePayloadSchema = vale.looseObject({
+  name: vale.string(),
+});
+
+type LoosePayload = InferVale<typeof loosePayloadSchema>;
+console.log("strictObject + looseObject schemas ready");
+
 // ---------------------------------------------------------------------------
 // Array and optional
 // ---------------------------------------------------------------------------

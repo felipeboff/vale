@@ -1,5 +1,5 @@
 import { ValeError } from "../errors/ValeError";
-import { valeSingleIssue } from "../result/helpers";
+import { valeOk, valeSingleIssue } from "../result/helpers";
 import { applyLockValidation } from "./lock";
 import type {
   ValeNonNullish,
@@ -58,7 +58,9 @@ export const createDefaultParser =
   ): Parser<ValeNonNullish<T>> =>
   (input, path) => {
     if (isDefaultLike(input)) return { ok: true, value: fallback };
-    return probe(input, path) as ValeResult<ValeNonNullish<T>>;
+    const result = probe(input, path);
+    if (!result.ok) return result;
+    return valeOk(result.value as ValeNonNullish<T>);
   };
 
 export const createIntoParser =

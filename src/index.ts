@@ -7,6 +7,12 @@ export type {
 export type {
   ValeSchema,
   InferVale,
+  ValeShape,
+  ValeObjectOutput,
+  ValeLooseObjectOutput,
+  ValeSchemaMeta,
+  ValeSchemaDef,
+  InferFieldOutput,
 } from "./shared/types/schema";
 
 export { valeIsRecord } from "./shared/guards/valeIsRecord";

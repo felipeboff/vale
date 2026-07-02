@@ -17,7 +17,10 @@ Validate and resolve unknown input (for example APIs, forms, or config) into typ
   Each issue includes a path such as `["author", "age"]`. This makes it easy to show field errors in UI or logs.
 
 - Type inference  
-  Use `InferVale<typeof schema>` to derive the TypeScript type from a schema.
+  Use `InferVale<typeof schema>` to derive the TypeScript type from a schema. Optional, nullish, and default fields infer as optional object keys (`nickname?: string`).
+
+- Object utilities  
+  `strictObject`, `looseObject`, and `passthrough` cover strict APIs, partially typed payloads, and fully dynamic objects.
 
 - No dependencies  
   Pure TypeScript / JavaScript with zero runtime dependencies.
@@ -94,7 +97,31 @@ vale.uuid()	UUID v4 string
 vale.objectId()	MongoDB-style ObjectId string
 vale.enum([...])	One of the given string literals
 vale.object({...})	Object with specified shape
+vale.strictObject({...})	Object with specified shape; rejects unknown keys
+vale.looseObject({...})	Validates known keys; keeps extra keys in output
+vale.passthrough()	Accepts any object; output is Record<string, unknown>
 vale.array(schema)	Array of validated items
+```
+
+Optional fields on object schemas infer as optional keys:
+
+```ts
+const profileSchema = vale.object({
+  name: vale.string(),
+  nickname: vale.string().optional(),
+});
+
+type Profile = InferVale<typeof profileSchema>;
+// { name: string; nickname?: string | undefined }
+```
+
+Use `vale.strictObject` when you want `.lock()` behavior without losing field inference:
+
+```ts
+const createUserSchema = vale.strictObject({
+  email: vale.email(),
+  password: vale.string(),
+});
 ```
 
 ---
@@ -105,7 +132,7 @@ Schemas can be extended with modifiers.
 
 ```ts
 .optional()
-undefined is accepted. Output type becomes T | undefined.
+undefined is accepted. On object fields, the key becomes optional in `InferVale` output.
 
 .nullable()
 null is accepted. Output type becomes T | null.

@@ -17,15 +17,11 @@ export const createObjectSchema = <T extends ValeShape>(
       return valeSingleIssue(path, "object", defaultMessage(path, "object"));
     }
 
-    const entries = Object.keys(shape).map((key) => {
-      const schema = shape[key as keyof T];
-      const result = schema.probe(input[key], [...path, key]);
+    const shapeKeys = Object.keys(shape) as Array<keyof T & string>;
+    const entries = shapeKeys.map((key) => ({
+      key,
+      res: shape[key].probe(input[key], [...path, key]),
+    }));
 
-      return {
-        key: key as keyof ValeObjectOutput<T>,
-        res: result as ValeResult<unknown>,
-      };
-    });
-
-    return valeMergeResults<ValeObjectOutput<T>>(entries);
+    return valeMergeResults(entries) as ValeResult<ValeObjectOutput<T>>;
   });

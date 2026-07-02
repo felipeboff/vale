@@ -1,8 +1,13 @@
 {
   "name": "@felipe.boff/vale",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "TypeScript-first runtime validator with coercion, composable schemas, and path-based error reporting",
   "type": "module",
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -17,13 +22,15 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "clean": "rm -rf dist",
     "resolve": "tsc-alias --resolve-full-paths --resolve-full-extension .js",
-    "build": "npm run clean && tsc && npm run resolve",
+    "build": "pnpm clean && tsc && pnpm resolve",
     "example": "tsx examples/usage.ts",
-    "release": "npm run build && npm login && npm publish",
+    "release": "pnpm test:all && pnpm build && pnpm publish",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:types": "vitest run test/types",
+    "test:all": "vitest run && vitest run test/types",
     "test:coverage": "vitest run --coverage"
   },
   "keywords": [

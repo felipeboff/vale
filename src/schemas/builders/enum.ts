@@ -4,11 +4,18 @@ import { valeStringParser } from "../../parsers/string";
 import type { ValeEnumOptions, ValeSchema } from "../../shared/types/schema";
 import { defaultMessage } from "../utils/defaultMessage";
 
+const isEnumMember = <T extends string>(
+  values: readonly T[],
+  value: string,
+): value is T => (values as readonly string[]).includes(value);
+
 export const createEnumSchema = <T extends string>(
   options: ValeEnumOptions<T>,
   message?: string,
 ): ValeSchema<T> => {
-  const values = Array.isArray(options) ? [...options] : Object.values(options);
+  const values: readonly T[] = Array.isArray(options)
+    ? options
+    : (Object.values(options) as T[]);
 
   return makeVale<T>((input, path) => {
     const output = valeStringParser(input);
@@ -17,8 +24,8 @@ export const createEnumSchema = <T extends string>(
       return valeSingleIssue(path, "enum", message ?? defaultMessage(path, "enum"));
     }
 
-    return values.includes(output as T)
-      ? valeOk(output as T)
+    return isEnumMember(values, output)
+      ? valeOk(output)
       : valeSingleIssue(path, "enum", message ?? defaultMessage(path, "enum"));
   });
 };

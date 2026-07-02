@@ -9,6 +9,11 @@ import type { ValeFactory } from "./types";
 import { createArraySchema } from "./builders/array";
 import { createCoercionSchema } from "./builders/coercion";
 import { createEnumSchema } from "./builders/enum";
+import {
+  createLooseObjectSchema,
+  createPassthroughSchema,
+  createStrictObjectSchema,
+} from "./builders/looseObject";
 import { createObjectSchema } from "./builders/object";
 import { createPatternSchema } from "./builders/pattern";
 import { createStringSchema } from "./builders/string";
@@ -27,5 +32,8 @@ export const createVale = (): ValeFactory => ({
     createPatternSchema("objectId", valeObjectIdRegex, message),
   enum: (options, message) => createEnumSchema(options, message),
   object: (shape) => createObjectSchema(shape),
+  strictObject: (shape) => createStrictObjectSchema(shape),
+  looseObject: (shape) => createLooseObjectSchema(shape),
+  passthrough: () => createPassthroughSchema(),
   array: (item) => createArraySchema(item),
 });

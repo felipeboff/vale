@@ -227,4 +227,36 @@ describe("createVale", () => {
       if (!result.ok) expect(result.issues[0].path).toEqual([1]);
     });
   });
+
+  describe("strictObject", () => {
+    it("parses known keys and rejects extras", () => {
+      const schema = vale.strictObject({ name: vale.string() });
+      const ok = schema.probe({ name: "Ada" });
+      expect(ok.ok).toBe(true);
+
+      const bad = schema.probe({ name: "Ada", extra: true });
+      expect(bad.ok).toBe(false);
+      if (!bad.ok) expect(bad.issues[0].code).toBe("unrecognized_key");
+    });
+  });
+
+  describe("looseObject", () => {
+    it("validates known keys and keeps extras", () => {
+      const schema = vale.looseObject({ name: vale.string() });
+      const result = schema.probe({ name: "Ada", role: "admin" });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual({ name: "Ada", role: "admin" });
+      }
+    });
+  });
+
+  describe("passthrough", () => {
+    it("accepts any object record", () => {
+      const schema = vale.passthrough();
+      const result = schema.probe({ any: "value", count: 1 });
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.value).toEqual({ any: "value", count: 1 });
+    });
+  });
 });
