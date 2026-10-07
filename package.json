@@ -29,8 +29,9 @@
     "release": "pnpm test:all && pnpm build && pnpm publish",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:all": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:all": "vitest run && vitest run --typecheck.only",
+    "test:coverage": "vitest run --coverage",
+    "test:types": "vitest run --typecheck.only"
   },
   "keywords": [
     "validation",
