@@ -1,39 +1,43 @@
-export type {
-  ValePath,
-  ValeIssue,
-  ValeResult,
-  ValeJsonObject,
-} from "./shared/types/common";
-export type {
-  ValeSchema,
-  InferVale,
-  ValeShape,
-  ValeObjectOutput,
-  ValeLooseObjectOutput,
-  ValeSchemaMeta,
-  ValeSchemaDef,
-  InferFieldOutput,
-} from "./shared/types/schema";
+import { array } from './schemas/array';
+import { bigint } from './schemas/bigint';
+import { boolean } from './schemas/boolean';
+import { date } from './schemas/date';
+import { cnpj, cpf, cpfCnpj } from './schemas/document';
+import { enumValue } from './schemas/enum';
+import { email, objectId, uuid } from './schemas/format';
+import { number } from './schemas/number';
+import { object } from './schemas/object';
+import { string } from './schemas/string';
 
-export { valeIsRecord } from "./shared/guards/valeIsRecord";
-export { valeOk, valeFail, valeSingleIssue, valeMergeResults } from "./core/result/helpers";
-export { makeVale } from "./core/schema/makeVale";
-export { valeStringParser } from "./parsers/string";
-export { valeNumberParser } from "./parsers/number";
-export { valeIntegerParser } from "./parsers/integer";
-export { valeBooleanParser } from "./parsers/boolean";
-export { valeDateParser } from "./parsers/date";
-export { valeEmailRegex } from "./patterns/email";
-export { valeUuidRegex } from "./patterns/uuid";
-export { valeObjectIdRegex } from "./patterns/objectId";
-export { valeDateRegex } from "./patterns/date";
-export {
-  formatValidCpf,
-  formatValidCnpj,
-  formatValidCpfOrCnpj,
-} from "./patterns/cpfCnpj";
-export { createVale } from "./schemas/createVale";
-export type { ValeFactory, ValeStringSchema } from "./schemas/types";
-export { vale, v } from "./runtime/vale";
-export { ValeError } from "./core/errors/ValeError";
-export { valeValidate } from "./core/validate/valeValidate";
+export type * from './types';
+export type { ArrayOptions } from './schemas/array';
+export type { BigIntOptions } from './schemas/bigint';
+export type { BooleanOptions } from './schemas/boolean';
+export type { DateOptions } from './schemas/date';
+export type { CnpjOptions, CpfCnpjOptions, CpfOptions, DocumentOptions } from './schemas/document';
+export type { EnumOptions } from './schemas/enum';
+export type { EmailOptions, FormatOptions, ObjectIdOptions, UuidOptions } from './schemas/format';
+export type { NumberOptions } from './schemas/number';
+export type { ObjectOptions } from './schemas/object';
+export type { StringOptions } from './schemas/string';
+
+export { formatValidCnpj, formatValidCpf, formatValidCpfOrCnpj } from './cpfCnpj';
+
+export { array, bigint, boolean, cnpj, cpf, cpfCnpj, date, email, enumValue, number, object, objectId, string, uuid };
+
+export const v = {
+  string,
+  number,
+  bigint,
+  boolean,
+  date,
+  email,
+  uuid,
+  objectId,
+  cpf,
+  cnpj,
+  cpfCnpj,
+  enum: enumValue,
+  array,
+  object,
+};

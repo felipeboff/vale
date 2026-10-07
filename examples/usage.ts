@@ -1,167 +1,50 @@
 /**
  * Vale – usage examples
  *
- * Run with: npx tsx examples/usage.ts
+ * Run with: pnpm example
  */
 
-import {
-  vale,
-  valeValidate,
-  ValeError,
-  type InferVale,
-  type ValeResult,
-} from "../src";
+import { v } from "../src";
 
-// ---------------------------------------------------------------------------
-// Primitives (with coercion)
-// ---------------------------------------------------------------------------
-
-const stringResult = vale.string().resolve("hello");
-console.log("string:", stringResult); // "hello"
-
-const numberResult = vale.number().resolve("42");
-console.log("number (coerced):", numberResult); // 42
-
-const booleanResult = vale.boolean().resolve("true");
-console.log("boolean (coerced):", booleanResult); // true
-
-// ---------------------------------------------------------------------------
-// CPF / CNPJ (chained on string — use .cpf() / .cnpj() / .cpfCnpj() before .optional())
-// ---------------------------------------------------------------------------
-
-const cpfFormatted = vale.string().cpf().resolve("39053344705");
-console.log("cpf:", cpfFormatted); // "390.533.447-05"
-
-const cnpjFormatted = vale.string().cnpj().resolve("04252011000110");
-console.log("cnpj:", cnpjFormatted); // "04.252.011/0001-10"
-
-const taxId = vale.string().cpfCnpj().resolve("04252011000110");
-console.log("cpf or cnpj:", taxId);
-
-const optionalCpf = vale.string().cpf().optional().resolve(undefined);
-console.log("optional cpf (absent):", optionalCpf); // undefined
-
-// ---------------------------------------------------------------------------
-// Object schema
-// ---------------------------------------------------------------------------
-
-const userSchema = vale.object({
-  name: vale.string(),
-  age: vale.integer(),
-  email: vale.email(),
-  active: vale.boolean().default(true),
-});
-
-type User = InferVale<typeof userSchema>;
-
-const userInput = {
-  name: "Jane",
-  age: 28,
-  email: "jane@example.com",
-  // active omitted – will use default
+type User = {
+  name: string;
+  age: number;
+  email: string;
+  document: string;
+  role: "admin" | "user";
+  active: boolean;
+  tags: string[];
 };
 
-const user = userSchema.resolve(userInput);
-console.log("user:", user);
-// { name: "Jane", age: 28, email: "jane@example.com", active: true }
-
-const strictUserSchema = userSchema.lock();
-const strictUserProbe = strictUserSchema.probe({
-  ...userInput,
-  extra: "x",
-});
-console.log("lock (extra key):", strictUserProbe);
-
-const strictApiSchema = vale.strictObject({
-  name: vale.string(),
-  email: vale.email(),
+const userSchema = v.object<User>({
+  name: v.string({ trim: true, minLength: 1 }),
+  age: v.number({ integer: true, min: 0 }),
+  email: v.email(),
+  document: v.cpfCnpj(),
+  role: v.enum({ values: ["admin", "user"] }),
+  active: v.boolean({ default: true }),
+  tags: v.array(v.string(), { maxLength: 5 }),
 });
 
-type StrictApiBody = InferVale<typeof strictApiSchema>;
+console.log(
+  userSchema.parse({
+    name: " Jane ",
+    age: "28",
+    email: "Jane@Example.com",
+    document: "39053344705",
+    role: "admin",
+    tags: ["a", "b"],
+  }),
+);
+// { ok: true, data: { name: "Jane", age: 28, email: "jane@example.com", document: "390.533.447-05", role: "admin", active: true, tags: ["a", "b"] } }
 
-const loosePayloadSchema = vale.looseObject({
-  name: vale.string(),
-});
+console.log(userSchema.parse({ name: "", age: "x", email: "nope", role: "guest", tags: [1, {}] }));
+// { ok: false, violations: [{ field: "name", reason: "min_length" }, { field: "age", reason: "invalid_number" }, ...] }
 
-type LoosePayload = InferVale<typeof loosePayloadSchema>;
-console.log("strictObject + looseObject schemas ready");
-
-// ---------------------------------------------------------------------------
-// Array and optional
-// ---------------------------------------------------------------------------
-
-const tagsSchema = vale.array(vale.string());
-const tags = tagsSchema.resolve(["a", "b", "c"]);
-console.log("array:", tags); // ["a", "b", "c"]
-
-const optionalName = vale.string().optional();
-console.log("optional (present):", optionalName.resolve("Alice")); // "Alice"
-console.log("optional (absent):", optionalName.resolve(undefined)); // undefined
-
-// ---------------------------------------------------------------------------
-// Enum
-// ---------------------------------------------------------------------------
-
-const roleSchema = vale.enum(["admin", "user", "guest"]);
-console.log("enum:", roleSchema.resolve("admin")); // "admin"
-const roleInvalid = roleSchema.probe("superuser");
-console.log("enum (invalid):", roleInvalid); // { ok: false, issues: [...] }
-
-// ---------------------------------------------------------------------------
-// valeValidate – throw on failure
-// ---------------------------------------------------------------------------
-
-try {
-  const user = valeValidate(userSchema, {
-    name: "Bob",
-    age: "thirty", // invalid
-    email: "bob@example.com",
-  });
-  console.log("validated user:", user);
-} catch (err) {
-  if (err instanceof ValeError) {
-    console.log("ValeError issues:", err.issues);
-    // e.g. [{ path: ["age"], code: "integer", message: "age is invalid integer" }]
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Handling result manually
-// ---------------------------------------------------------------------------
-
-function validateAndLog<T>(result: ValeResult<T>, label: string): void {
-  if (result.ok) {
-    console.log(`${label}:`, result.value);
-  } else {
-    console.log(`${label} failed:`, result.issues);
-  }
-}
-
-validateAndLog(vale.email().probe("invalid"), "email");
-validateAndLog(
-  vale.uuid().probe("550e8400-e29b-41d4-a716-446655440000"),
-  "uuid",
+const rangeSchema = v.object<{ start: Date; end: Date }>(
+  { start: v.date(), end: v.date() },
+  { refine: [{ check: (r) => r.start <= r.end, reason: "invalid_range", field: "end" }] },
 );
 
-// ---------------------------------------------------------------------------
-// Nested object and array
-// ---------------------------------------------------------------------------
-
-const postSchema = vale.object({
-  title: vale.string(),
-  tags: vale.array(vale.string()),
-  author: vale.object({
-    name: vale.string(),
-    role: vale.enum(["admin", "user"]),
-  }),
-});
-
-type Post = InferVale<typeof postSchema>;
-
-const post = postSchema.resolve({
-  title: "Hello Vale",
-  tags: ["validation", "typescript"],
-  author: { name: "Dev", role: "admin" },
-});
-
-console.log("post:", post);
+console.log(rangeSchema.parse({ start: "2024-02-01", end: "2024-01-01" }));
+// { ok: false, violations: [{ field: "end", reason: "invalid_range" }] }

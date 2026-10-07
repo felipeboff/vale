@@ -1,11 +1,3 @@
 {
-  "cSpell.words": [
-    "Alnum",
-    "boff",
-    "Cnpj",
-    "felipe",
-    "felipe.boff",
-    "felipeboff",
-    "vale"
-  ]
+  "json.schemaDownload.enable": true
 }
