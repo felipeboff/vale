@@ -1,230 +1,133 @@
 # Vale
 
-TypeScript-first runtime validator with coercion, composable schemas, and path-based error reporting.
+TypeScript-first runtime validator with coercion, composable schemas, and path-based violations.
 
-Validate and resolve unknown input (for example APIs, forms, or config) into typed values. Vale returns a result object instead of throwing so validation failures can be handled explicitly. When needed you can use `valeValidate` to throw on failure.
+Vale parses unknown input (APIs, forms, query strings, config) into typed values. `parse` never throws: it returns a result object so failures are handled explicitly.
 
-## Features
-
-- Coercion  
-  Primitives like number, integer, boolean, and date accept string input and coerce when valid.  
-  `"42"` becomes `42`, `"true"` becomes `true`.
-
-- Composable schemas  
-  Build object, array, and nested structures. Combine with `.optional()`, `.nullable()`, `.default()`, `.into()`, and `.guard()`.
-
-- Path-based errors  
-  Each issue includes a path such as `["author", "age"]`. This makes it easy to show field errors in UI or logs.
-
-- Type inference  
-  Use `InferVale<typeof schema>` to derive the TypeScript type from a schema. Optional, nullish, and default fields infer as optional object keys (`nickname?: string`).
-
-- Object utilities  
-  `strictObject`, `looseObject`, and `passthrough` cover strict APIs, partially typed payloads, and fully dynamic objects.
-
-- No dependencies  
-  Pure TypeScript / JavaScript with zero runtime dependencies.
-
----
-
-# Installation
-
-npm
+## Installation
 
 ```bash
 npm i @felipe.boff/vale
-```
-
-yarn
-
-```bash
-yarn add @felipe.boff/vale
-```
-
-pnpm
-
-```bash
+# or
 pnpm add @felipe.boff/vale
 ```
 
----
-
-Quick start
+## Quick start
 
 ```ts
-import { vale, type InferVale } from "@felipe.boff/vale";
+import { v } from "@felipe.boff/vale";
 
-const userSchema = vale.object({
-  name: vale.string(),
-  age: vale.integer(),
-  email: vale.email(),
-  active: vale.boolean().default(true),
+type User = { name: string; age: number; email: string; active: boolean };
+
+const userSchema = v.object<User>({
+  name: v.string({ trim: true, minLength: 1 }),
+  age: v.number({ integer: true, min: 0 }),
+  email: v.email(),
+  active: v.boolean({ default: true }),
 });
 
-type User = InferVale<typeof userSchema>;
+const result = userSchema.parse({ name: "Jane", age: "28", email: "jane@example.com" });
 
-const user = userSchema.resolve({
-  name: "Jane",
-  age: 28,
-  email: "jane@example.com",
-});
-
-console.log(user);
-
-// If you want the non-throwing result object:
-const result = userSchema.probe({
-  name: "Jane",
-  age: 28,
-  email: "invalid-email",
-});
-if (!result.ok) console.log(result.issues);
-```
-
----
-
-Schema types
-
-Method Description
-
-```ts
-vale.string()	String
-vale.number()	Number (coerces from string)
-vale.integer()	Integer (coerces from string)
-vale.boolean()	Boolean (coerces "true" / "false")
-vale.date()	Date (coerces from string or number)
-vale.email()	String matching email format
-vale.uuid()	UUID v4 string
-vale.objectId()	MongoDB-style ObjectId string
-vale.enum([...])	One of the given string literals
-vale.object({...})	Object with specified shape
-vale.strictObject({...})	Object with specified shape; rejects unknown keys
-vale.looseObject({...})	Validates known keys; keeps extra keys in output
-vale.passthrough()	Accepts any object; output is Record<string, unknown>
-vale.array(schema)	Array of validated items
-```
-
-Optional fields on object schemas infer as optional keys:
-
-```ts
-const profileSchema = vale.object({
-  name: vale.string(),
-  nickname: vale.string().optional(),
-});
-
-type Profile = InferVale<typeof profileSchema>;
-// { name: string; nickname?: string | undefined }
-```
-
-Use `vale.strictObject` when you want `.lock()` behavior without losing field inference:
-
-```ts
-const createUserSchema = vale.strictObject({
-  email: vale.email(),
-  password: vale.string(),
-});
-```
-
----
-
-Modifiers
-
-Schemas can be extended with modifiers.
-
-```ts
-.optional()
-undefined is accepted. On object fields, the key becomes optional in `InferVale` output.
-
-.nullable()
-null is accepted. Output type becomes T | null.
-
-.nullish()
-null or undefined accepted. Also treats `""` and `"null"` (query-string values) as nullish and returns `undefined`.
-
-.default(value)
-Use value when input is `undefined`, `null`, `""`, or `"null"`.
-
-.into(fn)
-Transform parsed value.
-
-vale.string().into((v) => v.trim())
-
-.guard(predicate, message)
-Custom validation refinement.
-
-vale.number().guard((n) => n > 0, "Must be positive")
-
-.lock()
-Rejects unrecognized object keys (best-effort key-set comparison).
-```
-
----
-
-Nested schemas
-
-Schemas can be composed.
-
-```ts
-const addressSchema = vale.object({
-  city: vale.string(),
-  zip: vale.string(),
-});
-
-const userSchema = vale.object({
-  name: vale.string(),
-  address: addressSchema,
-});
-```
-
----
-
-Result type
-
-```ts
-schema.probe(input) returns a discriminated union.
-
-type ValeResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; issues: ValeIssue[] }
-
-type ValeIssue = {
-  path: (string | number)[]
-  code: string
-  message: string
+if (result.ok) {
+  result.data; // { name: "Jane", age: 28, email: "jane@example.com", active: true }
+} else {
+  result.violations; // [{ field: "age", reason: "invalid_number" }]
 }
 ```
 
-Example issue
-
-```
-{
-  path: ["age"],
-  code: "integer",
-  message: "Expected integer"
-}
-```
-
----
-
-Throw on failure
-
-Use `schema.resolve()` (or `valeValidate`) to throw a `ValeError`.
+## Result
 
 ```ts
-import { valeValidate, ValeError } from "@felipe.boff/vale";
+type ParseResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; violations: Violation[] };
 
-try {
-  const user = valeValidate(userSchema, rawInput);
-  console.log(user);
-} catch (err) {
-  if (err instanceof ValeError) {
-    console.log(err.issues);
-  }
-}
+type Violation = {
+  field: string; // dot path, e.g. "address.city" or "tags.0"; "" for the root value
+  reason: ViolationReason; // e.g. "required", "invalid_number", "min_length" or a custom reason
+};
 ```
 
----
+## Schemas
 
-License
+| Schema | Accepts |
+| --- | --- |
+| `v.string(options?)` | strings; coerces finite numbers, booleans, bigints and valid dates (ISO) |
+| `v.number(options?)` | finite numbers; numeric strings; safe bigints |
+| `v.bigint(options?)` | bigints; safe integers; integer strings |
+| `v.boolean(options?)` | booleans; `1`/`0`; `"true"`/`"false"`/`"1"`/`"0"` (case-insensitive) |
+| `v.date(options?)` | valid `Date`s; timestamps; `YYYY-MM-DD` and ISO date-times with `Z` or an offset |
+| `v.email(options?)` | email strings (trimmed and lowercased by default) |
+| `v.uuid(options?)` | UUID strings (trimmed and lowercased by default) |
+| `v.objectId(options?)` | 24-char hex strings (trimmed and lowercased by default) |
+| `v.cpf(options?)` | valid CPF strings, with or without mask; outputs `000.000.000-00` |
+| `v.cnpj(options?)` | valid CNPJ strings (numeric or alphanumeric), with or without mask; outputs `00.000.000/0000-00` |
+| `v.cpfCnpj(options?)` | a valid CPF or CNPJ, formatted as above |
+| `v.enum({ values })` | one of `values` (strings or numbers) |
+| `v.array(item, options?)` | arrays whose items match `item` |
+| `v.object<T>(shape, options?)` | plain objects; unknown keys are stripped |
 
-ISC
-Felipe Boff
+## Options
+
+Every schema accepts the base options:
+
+| Option | Description |
+| --- | --- |
+| `optional` | accept `undefined` |
+| `nullable` | accept `null` |
+| `default` | value parsed in place of `undefined` |
+| `transform` | `(value: T) => T`, applied after coercion and before checks |
+| `refine` | `{ check, reason, field? }[]`, custom checks producing violations |
+
+Schema-specific options:
+
+- `string`: `trim`, `lowercase`, `uppercase`, `minLength`, `maxLength`
+- `number`: `integer`, `min`, `max`
+- `bigint`: `min`, `max`
+- `date`: `min`, `max`, `requireOffset` (string input must carry `Z` or an offset; `Date`s and timestamps still pass)
+- `email` / `uuid` / `objectId`: `trim`, `lowercase`, `empty` (accept `""`)
+- `cpf` / `cnpj` / `cpfCnpj`: `empty` (accept `""`)
+- `array`: `minLength`, `maxLength`
+
+## Types
+
+`v.object<T>(shape)` takes the output type as a generic and checks each field schema against it. The shape must have exactly the keys of `T`:
+
+```ts
+type User = { name: string; age?: number };
+
+v.object<User>({ name: v.string(), age: v.number({ optional: true }) }); // ok
+v.object<User>({ name: v.number(), age: v.number() }); // type error: name is not a number schema
+v.object<User>({ name: v.string() }); // type error: age is missing
+```
+
+Without the generic, the type is inferred from the shape (all fields required and non-null):
+
+```ts
+const schema = v.object({ name: v.string() }); // Schema<{ name: string }>
+```
+
+Other schemas have a fixed type (`v.string()` is `Schema<string>`, `v.enum` uses its `values`, `v.array` uses its item). `optional` and `nullable` are not reflected in these types, so declare them in the object type.
+
+## CPF / CNPJ helpers
+
+```ts
+import { formatValidCpf, formatValidCnpj, formatValidCpfOrCnpj } from "@felipe.boff/vale";
+
+formatValidCpf("39053344705"); // "390.533.447-05"
+formatValidCnpj("04252011000110"); // "04.252.011/0001-10"
+formatValidCpfOrCnpj("123"); // null
+```
+
+## Cross-field refinements
+
+```ts
+const range = v.object<{ start: Date; end: Date }>(
+  { start: v.date(), end: v.date() },
+  { refine: [{ check: (r) => r.start <= r.end, reason: "invalid_range", field: "end" }] },
+);
+```
+
+## License
+
+ISC — Felipe Boff
