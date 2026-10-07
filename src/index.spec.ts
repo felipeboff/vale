@@ -239,3 +239,24 @@ describe('object', () => {
     expect(range.parse({ start: 2, end: 1 })).toEqual({ ok: false, violations: [{ field: 'end', reason: 'invalid_range' }] });
   });
 });
+
+describe('cpf and cnpj', () => {
+  it('formats valid documents', () => {
+    expect(v.cpf().parse('39053344705')).toEqual({ ok: true, data: '390.533.447-05' });
+    expect(v.cnpj().parse(' 04.252.011/0001-10 ')).toEqual({ ok: true, data: '04.252.011/0001-10' });
+    expect(v.cpfCnpj().parse('04252011000110')).toEqual({ ok: true, data: '04.252.011/0001-10' });
+    expect(v.cpfCnpj().parse('390.533.447-05')).toEqual({ ok: true, data: '390.533.447-05' });
+  });
+
+  it('rejects invalid documents', () => {
+    expect(v.cpf().parse('39053344700')).toEqual({ ok: false, violations: [{ field: '', reason: 'invalid_cpf' }] });
+    expect(v.cpf().parse(39053344705)).toEqual({ ok: false, violations: [{ field: '', reason: 'invalid_cpf' }] });
+    expect(v.cnpj().parse('11111111111111')).toEqual({ ok: false, violations: [{ field: '', reason: 'invalid_cnpj' }] });
+    expect(v.cpfCnpj().parse('123')).toEqual({ ok: false, violations: [{ field: '', reason: 'invalid_cpf_cnpj' }] });
+  });
+
+  it('allows empty strings only when enabled', () => {
+    expect(v.cpf().parse('').ok).toBe(false);
+    expect(v.cpf({ empty: true }).parse(' ')).toEqual({ ok: true, data: '' });
+  });
+});
